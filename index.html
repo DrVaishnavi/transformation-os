@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1a1a2e">
+<title>Vaishnavi's Transformation OS</title>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-app-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-firestore-compat.js"></script>
+<style>
+:root{--bg:#f7f6f2;--card:#fff;--ink:#1a1a2e;--muted:#8a8aaa;--line:#e2e0d8;--v:#7C5CBF;--v-l:#f0ebfb;--a:#2E9E7A;--a-l:#e6f7f2;--gold:#D4A843;--gold-l:#fdf3dc;--red:#E05050;--red-l:#fdeaea;--slate:#5a6a8a;--slate-l:#eef0f5}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.app{max-width:920px;margin:auto;padding:16px 16px 80px}
+.hidden{display:none !important}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+.brand{font-weight:800;font-size:19px}
+.sub{color:var(--muted);font-size:12px}
+nav{display:flex;gap:6px;overflow:auto;padding-bottom:4px;margin-bottom:18px}
+nav button{border:1px solid var(--line);background:#fff;border-radius:20px;padding:7px 13px;color:#555;white-space:nowrap;font-size:12px;font-weight:600}
+nav button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+h1{font-size:22px;margin:0 0 6px}
+h2{font-size:16px;margin:0 0 10px}
+h3{font-size:12.5px;margin:16px 0 8px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.muted{color:var(--muted);font-size:12.5px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:640px){.grid2,.grid3{grid-template-columns:1fr}}
+.item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.item input[type=checkbox]{width:18px;height:18px;accent-color:var(--v);margin-top:2px;flex-shrink:0}
+.item .name{flex:1;cursor:pointer}
+.item .name.done{text-decoration:line-through;color:var(--muted)}
+.tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;margin-left:6px}
+.tag-v{background:var(--v-l);color:var(--v)}.tag-a{background:var(--a-l);color:var(--a)}.tag-gold{background:var(--gold-l);color:#8a6010}.tag-slate{background:var(--slate-l);color:var(--slate)}
+.detail{display:none;margin:6px 0 4px 28px;padding:8px 10px;background:var(--v-l);border-radius:8px;font-size:12.5px;color:#4a3580}
+.detail.open{display:block}
+input[type=text],input[type=email],input[type=password],input[type=number],input[type=date],textarea,select{width:100%;border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:#fff;outline:none}
+textarea{min-height:60px;resize:vertical}
+.btn{border:0;background:var(--ink);color:#fff;border-radius:9px;padding:9px 14px;font-weight:600;font-size:13px}
+.btn.secondary{background:#f0efec;color:#222}
+.btn.danger{background:var(--red-l);color:#8a2020}
+.btn.small{padding:5px 10px;font-size:11px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.between{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.days{display:flex;gap:4px;flex-wrap:wrap;margin:6px 0}
+.daychip{border:1px solid var(--line);border-radius:8px;padding:5px 8px;font-size:11px;cursor:pointer;background:#fff}
+.daychip.on{background:var(--v);color:#fff;border-color:var(--v)}
+.progress{height:8px;background:#eee;border-radius:99px;overflow:hidden;margin-top:8px}
+.progress>i{display:block;height:100%;background:var(--v)}
+.alert{border-radius:8px;padding:9px 12px;font-size:12px;margin:8px 0}
+.alert-v{background:var(--v-l);color:#4a3580}
+.alert-red{background:var(--red-l);color:#8a2020}
+.alert-a{background:var(--a-l);color:#1a6045}
+.login-wrap{max-width:340px;margin:60px auto;padding:0 16px}
+.login-wrap .card{padding:22px}
+.stat-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center}
+.stat-num{font-size:20px;font-weight:800;color:var(--v)}
+.stat-label{font-size:10px;color:var(--muted);text-transform:uppercase}
+.pillar-block{border-left:3px solid var(--v);padding-left:12px;margin-bottom:16px}
+footer{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.95);border-top:1px solid var(--line);padding:7px;text-align:center;color:#999;font-size:10.5px}
+</style>
+</head>
+<body>
+
+<div id="loginScreen" class="login-wrap">
+  <div class="card">
+    <h1 style="margin-bottom:4px">✦ Transformation OS</h1>
+    <p class="muted" style="margin-bottom:16px">Sign in — use the same email on your iPhone and Mac to sync.</p>
+    <div id="loginError" class="alert alert-red hidden"></div>
+    <div style="margin-bottom:8px"><input type="email" id="loginEmail" placeholder="Email"></div>
+    <div style="margin-bottom:12px"><input type="password" id="loginPass" placeholder="Password"></div>
+    <div class="row">
+      <button class="btn" onclick="doLogin()">Log in</button>
+      <button class="btn secondary" onclick="doSignup()">Create account</button>
+    </div>
+  </div>
+</div>
+
+<div id="appScreen" class="app hidden">
+<header>
+  <div><div class="brand">✦ Transformation OS</div><div class="sub" id="userEmail"></div></div>
+  <button class="btn secondary small" onclick="logout()">Log out</button>
+</header>
+<nav id="nav"></nav>
+<main id="main"></main>
+</div>
+<footer>Synced to Firebase · Your own private data</footer>
+
+<script>
+// ── FIREBASE CONFIG — paste your config object here ─────────────────────────
+const firebaseConfig = {
+  apiKey: "PASTE_YOUR_API_KEY",
+  authDomain: "PASTE_YOUR_AUTH_DOMAIN",
+  projectId: "PASTE_YOUR_PROJECT_ID",
+  storageBucket: "PASTE_YOUR_STORAGE_BUCKET",
+  messagingSenderId: "PASTE_YOUR_SENDER_ID",
+  appId: "PASTE_YOUR_APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// ── CONSTANTS ────────────────────────────────────────────────────────────────
+const DAYNAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const PILLARS = [
+  {id:"p1", name:"Body & Health", icon:"🌿"},
+  {id:"p2", name:"Career & Knowledge", icon:"⚡"},
+  {id:"p3", name:"Home & Life Systems", icon:"🏡"},
+  {id:"p4", name:"Identity & Soul", icon:"✨"}
+];
+function uid(){ return Date.now() + "" + Math.floor(Math.random()*1000); }
+function pillarName(id){ const p=PILLARS.find(x=>x.id===id); return p?p.icon+" "+p.name:"—"; }
+
+// ── SEED DATA ────────────────────────────────────────────────────────────────
+const seed = {
+  goals: [
+    {id:"g1", pillarId:"p1", name:"Reach a healthy BMI (~50kg)"},
+    {id:"g2", pillarId:"p2", name:"Build a public AI/health portfolio"},
+    {id:"g3", pillarId:"p3", name:"Full financial plan built"},
+    {id:"g4", pillarId:"p4", name:"Consistent public journal / content"}
+  ],
+  projects: [
+    {id:"pr1", pillarId:"p1", goalId:"g1", name:"PCOS management routine"},
+    {id:"pr2", pillarId:"p1", goalId:"g1", name:"Skincare & Haircare"},
+    {id:"pr3", pillarId:"p2", goalId:"g2", name:"GitHub Portfolio"},
+    {id:"pr4", pillarId:"p2", goalId:"g2", name:"Job Search"},
+    {id:"pr5", pillarId:"p3", goalId:"g3", name:"Financial Plan"},
+    {id:"pr6", pillarId:"p3", goalId:null, name:"Meal Prep System"},
+    {id:"pr7", pillarId:"p4", goalId:"g4", name:"Journaling & Content"}
+  ],
+  cyclic: [
+    {id:"c1", name:"Pranayama (Kapalbhati + Anulom Vilom)", projectId:"pr1", freq:"daily", days:[0,1,2,3,4,5,6], everyN:2, monthlyDay:1, anchor:null, detail:{}},
+    {id:"c2", name:"Morning herbal water", projectId:"pr1", freq:"daily", days:[0,1,2,3,4,5,6], everyN:2, monthlyDay:1, anchor:null,
+      detail:{1:"Jeera water — metabolism, bloating relief", 2:"Methi dana water (soaked overnight) — blood sugar, hair health", 3:"Ajwain water — digestion, liver stimulation", 4:"Saunf water (soaked overnight) — appetite regulation", 5:"Coriander seed water — diuretic, thyroid support", 6:"CCF water (jeera+dhania+saunf) — digestive tonic", 0:"Warm lemon + cinnamon + ginger — liver detox"}},
+    {id:"c3", name:"Workout", projectId:"pr1", freq:"daily", days:[0,1,2,3,4,5,6], everyN:2, monthlyDay:1, anchor:null,
+      detail:{1:"Strength: goblet squats, band rows, modified push-ups, glute bridge — 3 sets each", 2:"Walking pad 40 min incline + 10 min yoga basics", 3:"Strength circuit + 10 min core", 4:"Walking pad 40 min + 10 min core circuit", 5:"Walking pad 40 min + 10 min yoga", 6:"Outdoor walk 45–60 min, aim 8,000+ steps", 0:"Rest or gentle 20 min yoga"}},
+    {id:"c4", name:"Hair oiling / wash cycle", projectId:"pr2", freq:"everyN", days:[], everyN:4, monthlyDay:1, anchor:new Date().toISOString().slice(0,10), detail:{}},
+    {id:"c5", name:"AM skincare", projectId:"pr2", freq:"daily", days:[0,1,2,3,4,5,6], everyN:2, monthlyDay:1, anchor:null, detail:{}},
+    {id:"c6", name:"PM skincare", projectId:"pr2", freq:"daily", days:[0,1,2,3,4,5,6], everyN:2, monthlyDay:1, anchor:null, detail:{}},
+    {id:"c7", name:"Deep work — portfolio / content / AI tools", projectId:"pr3", freq:"daily", days:[0,1,2,3,4,5,6], everyN:2, monthlyDay:1, anchor:null, detail:{}},
+    {id:"c8", name:"1 job application or career task", projectId:"pr4", freq:"daily", days:[0,1,2,3,4,5,6], everyN:2, monthlyDay:1, anchor:null, detail:{}},
+    {id:"c9", name:"Evening walk", projectId:"pr1", freq:"daily", days:[0,1,2,3,4,5,6], everyN:2, monthlyDay:1, anchor:null, detail:{}},
+    {id:"c10", name:"Kitchen closed by 8pm", projectId:"pr1", freq:"daily", days:[0,1,2,3,4,5,6], everyN:2, monthlyDay:1, anchor:null, detail:{}},
+    {id:"c11", name:"Night ritual — journal + 3 MIT", projectId:"pr7", freq:"daily", days:[0,1,2,3,4,5,6], everyN:2, monthlyDay:1, anchor:null, detail:{}},
+    {id:"c12", name:"Batch meal prep (90 min)", projectId:"pr6", freq:"weekly", days:[0,3], everyN:2, monthlyDay:1, anchor:null,
+      detail:{0:"Sunday: boil eggs, gravy base, cook dals, prep salad boxes", 3:"Wednesday: restock eggs, chicken, paneer, dals"}},
+    {id:"c13", name:"Weigh-in (fasted)", projectId:"pr1", freq:"weekly", days:[0], everyN:2, monthlyDay:1, anchor:null, detail:{}},
+    {id:"c14", name:"Weekly XP / progress review", projectId:"pr7", freq:"weekly", days:[0], everyN:2, monthlyDay:1, anchor:null, detail:{}},
+    {id:"c15", name:"Review budget / SIPs", projectId:"pr5", freq:"monthly", days:[], everyN:2, monthlyDay:1, anchor:null, detail:{}}
+  ],
+  tasks: [],
+  chores: [
+    {id:uid(), name:"Laundry", freq:"weekly"},
+    {id:uid(), name:"Bedsheets", freq:"weekly"},
+    {id:uid(), name:"Grocery shopping", freq:"weekly"},
+    {id:uid(), name:"Bills & admin", freq:"monthly"},
+    {id:uid(), name:"Balcony garden care", freq:"weekly"},
+    {id:uid(), name:"Organize wardrobe", freq:"monthly"}
+  ],
+  meals: [
+    ["Mon","Scrambled eggs + roti + spinach","Roti + dal + bhindi + salad + curd","Ragi roti + veg soup + paneer"],
+    ["Tue","Moong dal chilla + chutney + curd","Brown rice + rajma + salad + curd","Masoor soup + roti"],
+    ["Wed","Ragi porridge + banana","Roti + chicken stir-fry + veg + salad","Egg curry + ragi roti"],
+    ["Thu","Soya bhurji + ragi roti","Soya curry + roti + dal + salad","Paneer tikka + veg"],
+    ["Fri","Boiled eggs + sprout chaat","Roti + palak paneer + salad + curd","Lentil soup + roti"],
+    ["Sat","Besan chilla + chutney + curd","Brown rice + prawn masala + veg + salad","Veg khichdi + curd"],
+    ["Sun","Daliya upma + egg + chaas","Roti + mixed dal + sabzi + salad + curd","2 eggs + stir-fry"]
+  ],
+  metrics: {weight:"67.7", target:"50", bmi:"30.9", bodyFat:"45", whr:"0.87", whtr:"0.64"},
+  macros: {calories:"1000–1200 kcal", protein:"95g minimum", carbs:"90-110g", fat:"35-45g"},
+  finance: [
+    {name:"Emergency fund", amount:"", target:""},
+    {name:"Investments / SIPs", amount:"", target:""},
+    {name:"Long-term wealth plan", amount:"", target:""}
+  ],
+  journal: [],
+  progressLog: [],
+  notes: "",
+  completions: {}
+};
+
+let S = null, uidRef = null, unsub = null;
+
+// ── AUTH ─────────────────────────────────────────────────────────────────────
+function showErr(msg){ const e=document.getElementById('loginError'); e.textContent=msg; e.classList.remove('hidden'); }
+function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim(), pass=document.getElementById('loginPass').value;
+  auth.signInWithEmailAndPassword(email, pass).catch(e=>showErr(e.message));
+}
+function doSignup(){
+  const email=document.getElementById('loginEmail').value.trim(), pass=document.getElementById('loginPass').value;
+  auth.createUserWithEmailAndPassword(email, pass).catch(e=>showErr(e.message));
+}
+function logout(){ if(unsub) unsub(); auth.signOut(); }
+
+auth.onAuthStateChanged(user=>{
+  if(user){
+    uidRef = user.uid;
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('appScreen').classList.remove('hidden');
+    document.getElementById('userEmail').textContent = user.email;
+    const ref = db.collection('users').doc(uidRef).collection('app').doc('state');
+    unsub = ref.onSnapshot(doc=>{
+      if(doc.exists){ S = doc.data(); }
+      else { S = structuredClone(seed); S.tab="Today"; ref.set(S); }
+      if(!S.tab) S.tab="Today";
+      if(!S.progressLog) S.progressLog=[];
+      if(!S.macros) S.macros=seed.macros;
+      render();
+    }, err=>{ showErr(err.message); });
+  } else {
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('appScreen').classList.add('hidden');
+    S = null;
+  }
+});
+
+function save(){
+  if(!uidRef || !S) return;
+  db.collection('users').doc(uidRef).collection('app').doc('state').set(S);
+}
+
+// ── DATE / CYCLIC ENGINE ─────────────────────────────────────────────────────
+function todayKey(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0'); }
+function isDue(item, date){
+  const dow = date.getDay();
+  if(item.freq==="daily") return true;
+  if(item.freq==="weekly") return (item.days||[]).includes(dow);
+  if(item.freq==="biweekly"){
+    if(!(item.days||[]).includes(dow)) return false;
+    if(!item.anchor) return true;
+    const anchor = new Date(item.anchor);
+    const diffWeeks = Math.floor((date - anchor) / (7*24*60*60*1000));
+    return diffWeeks % 2 === 0;
+  }
+  if(item.freq==="monthly") return date.getDate() === Number(item.monthlyDay||1);
+  if(item.freq==="everyN"){
+    if(!item.anchor) return true;
+    const anchor = new Date(item.anchor);
+    const diffDays = Math.floor((date - anchor) / (24*60*60*1000));
+    return diffDays >= 0 && diffDays % Number(item.everyN||2) === 0;
+  }
+  return false;
+}
+
+// ── NAV / RENDER ─────────────────────────────────────────────────────────────
+const TABS = ["Today","Goals","Recurring","Tasks","Chores","Meals","Finance","Journal","Progress","Stats"];
+function nav(){
+  document.getElementById('nav').innerHTML = TABS.map(t=>`<button class="${S.tab===t?'active':''}" onclick="setTab('${t}')">${t}</button>`).join('');
+}
+function setTab(t){ S.tab=t; save(); render(); }
+function render(){
+  nav();
+  const fn = {"Today":today,"Goals":goalsTab,"Recurring":cyclicMgr,"Tasks":tasksTab,"Chores":choresTab,"Meals":mealsTab,"Finance":financeTab,"Journal":journalTab,"Progress":progressTab,"Stats":statsTab}[S.tab];
+  document.getElementById('main').innerHTML = fn();
+}
+
+// ── TODAY ────────────────────────────────────────────────────────────────────
+function projectOf(id){ return S.projects.find(p=>p.id===id); }
+function today(){
+  const now = new Date(), key = todayKey(), dow = now.getDay();
+  const due = S.cyclic.filter(c=>isDue(c, now));
+  const done = (S.completions[key]||[]);
+  const pct = due.length ? Math.round(done.filter(id=>due.find(d=>d.id===id)).length/due.length*100) : 0;
+  const byPillar = {};
+  due.forEach(c=>{
+    const proj = projectOf(c.projectId);
+    const pid = proj ? proj.pillarId : "p3";
+    if(!byPillar[pid]) byPillar[pid]=[];
+    byPillar[pid].push(c);
+  });
+  let html = `<div class="card" style="background:var(--ink);color:#fff"><div class="between"><div><div class="muted" style="color:#b9b9c9">${now.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'short'})}</div><h1 style="color:#fff;margin-top:4px">Today's Quests</h1></div><div style="text-align:right"><div style="font-size:32px;font-weight:800">${pct}%</div><div class="muted" style="color:#b9b9c9">complete</div></div></div><div class="progress"><i style="width:${pct}%"></i></div></div>`;
+  PILLARS.forEach(p=>{
+    const items = byPillar[p.id];
+    if(!items || !items.length) return;
+    html += `<div class="card"><h3>${p.icon} ${p.name}</h3>`;
+    items.forEach(c=>{
+      const checked = done.includes(c.id);
+      const detailText = c.detail && c.detail[dow];
+      html += `<div class="item">
+        <input type="checkbox" ${checked?'checked':''} onchange="toggleDone('${c.id}')">
+        <div style="flex:1">
+          <span class="name ${checked?'done':''}" ${detailText?`onclick="toggleDetail('${c.id}')"`:''}>${c.name}${detailText?' 🔍':''}</span>
+          ${detailText?`<div class="detail" id="det-${c.id}">${detailText}</div>`:''}
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+  if(!due.length) html += `<div class="card muted">Nothing scheduled today. Add recurring items in the Recurring tab.</div>`;
+  return html;
+}
+function toggleDone(id){
+  const key = todayKey();
+  if(!S.completions[key]) S.completions[key]=[];
+  const i = S.completions[key].indexOf(id);
+  if(i>=0) S.completions[key].splice(i,1); else S.completions[key].push(id);
+  save(); render();
+}
+function toggleDetail(id){ const el=document.getElementById('det-'+id); if(el) el.classList.toggle('open'); }
+
+// ── GOALS / PILLARS / PROJECTS ───────────────────────────────────────────────
+function goalsTab(){
+  let html = "";
+  PILLARS.forEach(p=>{
+    const goals = S.goals.filter(g=>g.pillarId===p.id);
+    const projects = S.projects.filter(pr=>pr.pillarId===p.id);
+    html += `<div class="pillar-block"><h2>${p.icon} ${p.name}</h2>`;
+    goals.forEach(g=>{
+      html += `<div class="item"><span style="flex:1"><b>${g.name}</b></span><button class="btn danger small" onclick="delGoal('${g.id}')">✕</button></div>`;
+    });
+    html += `<div class="row" style="margin:6px 0 10px"><input type="text" id="ng-${p.id}" placeholder="Add a goal..."><button class="btn small" onclick="addGoal('${p.id}')">+ Goal</button></div>`;
+    html += `<h3>Projects</h3>`;
+    projects.forEach(pr=>{
+      html += `<div class="item"><span style="flex:1">${pr.name}</span><button class="btn danger small" onclick="delProject('${pr.id}')">✕</button></div>`;
+    });
+    html += `<div class="row" style="margin:6px 0"><input type="text" id="npr-${p.id}" placeholder="Add a project..."><button class="btn small" onclick="addProject('${p.id}')">+ Project</button></div>`;
+    html += `</div>`;
+  });
+  return html;
+}
+function addGoal(pillarId){ const el=document.getElementById('ng-'+pillarId), v=el.value.trim(); if(!v)return; S.goals.push({id:uid(), pillarId, name:v}); save(); render(); }
+function delGoal(id){ S.goals=S.goals.filter(g=>g.id!==id); save(); render(); }
+function addProject(pillarId){ const el=document.getElementById('npr-'+pillarId), v=el.value.trim(); if(!v)return; S.projects.push({id:uid(), pillarId, goalId:null, name:v}); save(); render(); }
+function delProject(id){ S.projects=S.projects.filter(p=>p.id!==id); save(); render(); }
+
+// ── RECURRING (CYCLIC) MANAGER ───────────────────────────────────────────────
+function cyclicMgr(){
+  let html = `<div class="card"><h2>Add a recurring item</h2>
+    <div class="grid2">
+      <input type="text" id="ncName" placeholder="Name">
+      <select id="ncProject">${S.projects.map(p=>`<option value="${p.id}">${pillarName(p.pillarId)} · ${p.name}</option>`).join('')}</select>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <select id="ncFreq" onchange="renderDayPicker()">
+        <option value="daily">Daily</option>
+        <option value="weekly">Weekly</option>
+        <option value="biweekly">Biweekly</option>
+        <option value="everyN">Every N days</option>
+        <option value="monthly">Monthly</option>
+      </select>
+      <span id="monthlyWrap" class="hidden"><input type="number" id="ncMonthDay" min="1" max="31" placeholder="Day of month" style="width:140px"></span>
+      <span id="everyNWrap" class="hidden"><input type="number" id="ncEveryN" min="1" placeholder="Every N days" style="width:140px"></span>
+    </div>
+    <div id="dayPickerWrap" class="days hidden"></div>
+    <button class="btn" style="margin-top:10px" onclick="addCyclic()">+ Add</button>
+  </div>
+  <h3>Your recurring items</h3>`;
+  S.cyclic.forEach(c=>{
+    const proj = projectOf(c.projectId);
+    let freqLabel = c.freq;
+    if(c.freq==="weekly"||c.freq==="biweekly") freqLabel += " · "+(c.days||[]).map(d=>DAYNAMES[d]).join(',');
+    if(c.freq==="monthly") freqLabel += " · day "+c.monthlyDay;
+    if(c.freq==="everyN") freqLabel += " · "+c.everyN+"d";
+    html += `<div class="card"><div class="between"><div><b>${c.name}</b> <span class="tag tag-v">${proj?proj.name:'—'}</span> <span class="tag tag-slate">${freqLabel}</span></div><button class="btn danger small" onclick="delCyclic('${c.id}')">Delete</button></div></div>`;
+  });
+  return html;
+}
+function renderDayPicker(){
+  const freq = document.getElementById('ncFreq').value;
+  const wrap = document.getElementById('dayPickerWrap');
+  document.getElementById('monthlyWrap').classList.toggle('hidden', freq!=='monthly');
+  document.getElementById('everyNWrap').classList.toggle('hidden', freq!=='everyN');
+  if(freq==='weekly' || freq==='biweekly'){
+    wrap.classList.remove('hidden');
+    wrap.innerHTML = DAYNAMES.map((d,i)=>`<span class="daychip" data-d="${i}" onclick="this.classList.toggle('on')">${d}</span>`).join('');
+  } else wrap.classList.add('hidden');
+}
+function addCyclic(){
+  const name = document.getElementById('ncName').value.trim();
+  if(!name) return;
+  const projectId = document.getElementById('ncProject').value;
+  const freq = document.getElementById('ncFreq').value;
+  const monthlyDay = document.getElementById('ncMonthDay') ? (document.getElementById('ncMonthDay').value || 1) : 1;
+  const everyN = document.getElementById('ncEveryN') ? (document.getElementById('ncEveryN').value || 2) : 2;
+  const days = [...document.querySelectorAll('#dayPickerWrap .daychip.on')].map(el=>Number(el.dataset.d));
+  S.cyclic.push({id:uid(), name, projectId, freq, days: freq==='daily'?[0,1,2,3,4,5,6]:days, monthlyDay, everyN, anchor: (freq==='biweekly'||freq==='everyN')?todayKey():null, detail:{}});
+  save(); render();
+}
+function delCyclic(id){ S.cyclic = S.cyclic.filter(c=>c.id!==id); save(); render(); }
+
+// ── TASKS (one-off) ──────────────────────────────────────────────────────────
+function tasksTab(){
+  let html = `<div class="card"><h2>One-off tasks</h2>`;
+  S.tasks.forEach(t=>{
+    html += `<div class="item"><input type="checkbox" ${t.done?'checked':''} onchange="toggleTask('${t.id}')"><span class="name ${t.done?'done':''}" style="flex:1">${t.text}</span><button class="btn danger small" onclick="delTask('${t.id}')">✕</button></div>`;
+  });
+  html += `<div class="row" style="margin-top:10px"><input type="text" id="newTask" placeholder="Add a task..."><button class="btn" onclick="addTask()">Add</button></div></div>`;
+  return html;
+}
+function addTask(){ const el=document.getElementById('newTask'), v=el.value.trim(); if(!v)return; S.tasks.push({id:uid(),text:v,done:false}); save(); render(); }
+function toggleTask(id){ const t=S.tasks.find(x=>x.id===id); t.done=!t.done; save(); render(); }
+function delTask(id){ S.tasks=S.tasks.filter(x=>x.id!==id); save(); render(); }
+
+// ── CHORES ───────────────────────────────────────────────────────────────────
+function choresTab(){
+  let html = `<div class="card"><h2>Chores (you & Atharva)</h2><p class="muted">Frequency-based for now — tick off whenever done.</p>`;
+  S.chores.forEach(c=>{
+    html += `<div class="item"><input type="checkbox" onchange="this.parentElement.querySelector('.name').classList.toggle('done')"><span class="name" style="flex:1">${c.name}</span><select onchange="setChoreFreq('${c.id}',this.value)" style="width:auto">
+      ${["daily","weekly","biweekly","monthly"].map(f=>`<option value="${f}" ${c.freq===f?'selected':''}>${f}</option>`).join('')}
+    </select><button class="btn danger small" onclick="delChore('${c.id}')">✕</button></div>`;
+  });
+  html += `<div class="row" style="margin-top:10px"><input type="text" id="newChore" placeholder="Add a chore..."><button class="btn" onclick="addChore()">Add</button></div></div>`;
+  return html;
+}
+function addChore(){ const el=document.getElementById('newChore'), v=el.value.trim(); if(!v)return; S.chores.push({id:uid(),name:v,freq:"weekly"}); save(); render(); }
+function setChoreFreq(id,f){ const c=S.chores.find(x=>x.id===id); c.freq=f; save(); }
+function delChore(id){ S.chores=S.chores.filter(x=>x.id!==id); save(); render(); }
+
+// ── MEALS ────────────────────────────────────────────────────────────────────
+function mealsTab(){
+  let html = `<div class="card"><h2>Weekly Meal Plan</h2><p class="muted">Edit any cell directly.</p>`;
+  S.meals.forEach((d,i)=>{
+    html += `<div style="margin-bottom:10px"><b>${d[0]}</b>
+      <div class="grid3" style="margin-top:4px">
+        <textarea onchange="editMeal(${i},1,this.value)" placeholder="Breakfast">${d[1]}</textarea>
+        <textarea onchange="editMeal(${i},2,this.value)" placeholder="Lunch">${d[2]}</textarea>
+        <textarea onchange="editMeal(${i},3,this.value)" placeholder="Dinner">${d[3]}</textarea>
+      </div></div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+function editMeal(i,col,val){ S.meals[i][col]=val; save(); }
+
+// ── FINANCE ──────────────────────────────────────────────────────────────────
+function financeTab(){
+  let html = `<div class="card"><h2>💰 Wealth / Finance Goals</h2>`;
+  S.finance.forEach((f,i)=>{
+    html += `<div class="item"><input type="text" value="${f.name}" style="flex:1" onchange="S.finance[${i}].name=this.value;save()"><input type="number" placeholder="₹ amount" value="${f.amount}" style="max-width:130px" onchange="S.finance[${i}].amount=this.value;save()"><input type="number" placeholder="₹ target" value="${f.target}" style="max-width:130px" onchange="S.finance[${i}].target=this.value;save()"><button class="btn danger small" onclick="delFinance(${i})">✕</button></div>`;
+  });
+  html += `<button class="btn secondary" style="margin-top:10px" onclick="addFinance()">+ Add goal</button></div>`;
+  return html;
+}
+function addFinance(){ S.finance.push({name:"New goal",amount:"",target:""}); save(); render(); }
+function delFinance(i){ S.finance.splice(i,1); save(); render(); }
+
+// ── JOURNAL ──────────────────────────────────────────────────────────────────
+function journalTab(){
+  let html = `<div class="card"><h2>Tonight's Journal</h2>
+    <div class="alert alert-v">4-question reflection · Gratitude · Affirmations — write whatever fits tonight.</div>
+    <textarea id="journalInput" placeholder="What went right today? What's the 1% I moved forward? Tomorrow's MIT?"></textarea>
+    <button class="btn" style="margin-top:8px" onclick="addJournal()">Save entry</button></div>
+    <h3>Past entries</h3>`;
+  (S.journal||[]).slice().reverse().forEach(j=>{
+    html += `<div class="card"><div class="muted">${j.date}</div><div style="margin-top:4px;white-space:pre-wrap">${j.text}</div></div>`;
+  });
+  return html;
+}
+function addJournal(){
+  const el = document.getElementById('journalInput'), v = el.value.trim();
+  if(!v) return;
+  if(!S.journal) S.journal=[];
+  S.journal.push({date: new Date().toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'}), text:v});
+  save(); render();
+}
+
+// ── PROGRESS (log only — photos stay on your phone) ──────────────────────────
+function progressTab(){
+  let html = `<div class="card"><h2>Progress Log</h2>
+    <div class="alert alert-a">Photos stay on your phone — this just logs the numbers and a label so you can match them up later. See the naming tip below.</div>
+    <div class="grid3">
+      <input type="date" id="plDate" value="${todayKey()}">
+      <input type="number" id="plWeight" placeholder="Weight (kg)">
+      <input type="text" id="plWaist" placeholder="Waist (cm)">
+    </div>
+    <input type="text" id="plPhotoLabel" placeholder="Photo filename/label, e.g. 2026-09-25_front" style="margin-top:8px">
+    <textarea id="plNotes" placeholder="Notes" style="margin-top:8px"></textarea>
+    <button class="btn" style="margin-top:8px" onclick="addProgress()">Log entry</button></div>
+    <h3>History</h3>`;
+  (S.progressLog||[]).slice().reverse().forEach((p,i)=>{
+    html += `<div class="card"><div class="between"><b>${p.date}</b><span class="muted">${p.weight||'—'}kg · ${p.waist||'—'}cm</span></div>${p.photoLabel?`<div class="muted">📷 ${p.photoLabel}</div>`:''}${p.notes?`<div style="margin-top:4px">${p.notes}</div>`:''}</div>`;
+  });
+  return html;
+}
+function addProgress(){
+  const date = document.getElementById('plDate').value;
+  const weight = document.getElementById('plWeight').value;
+  const waist = document.getElementById('plWaist').value;
+  const photoLabel = document.getElementById('plPhotoLabel').value.trim();
+  const notes = document.getElementById('plNotes').value.trim();
+  if(!S.progressLog) S.progressLog=[];
+  S.progressLog.push({date, weight, waist, photoLabel, notes});
+  if(weight) S.metrics.weight = weight;
+  save(); render();
+}
+
+// ── STATS ────────────────────────────────────────────────────────────────────
+function statsTab(){
+  return `<div class="card"><h2>Body Stats</h2>
+    <div class="grid3">
+      ${editableStat('Weight (kg)','weight')}
+      ${editableStat('Target (kg)','target')}
+      ${editableStat('BMI','bmi')}
+      ${editableStat('Body Fat %','bodyFat')}
+      ${editableStat('Waist:Hip','whr')}
+      ${editableStat('Waist:Height','whtr')}
+    </div></div>
+    <div class="card"><h2>Macros (reference)</h2>
+      <div class="grid2">
+        <div><label class="muted">Daily calories</label><input type="text" value="${S.macros.calories}" onchange="S.macros.calories=this.value;save()"></div>
+        <div><label class="muted">Protein</label><input type="text" value="${S.macros.protein}" onchange="S.macros.protein=this.value;save()"></div>
+        <div><label class="muted">Carbs</label><input type="text" value="${S.macros.carbs}" onchange="S.macros.carbs=this.value;save()"></div>
+        <div><label class="muted">Fat</label><input type="text" value="${S.macros.fat}" onchange="S.macros.fat=this.value;save()"></div>
+      </div>
+    </div>`;
+}
+function editableStat(label,key){
+  return `<div class="stat-card"><input type="text" value="${S.metrics[key]}" onchange="S.metrics['${key}']=this.value;save()" style="text-align:center;font-weight:800;font-size:16px;border:0;background:transparent"><div class="stat-label">${label}</div></div>`;
+}
+</script>
+</body>
+</html>
