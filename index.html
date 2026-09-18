@@ -86,19 +86,21 @@ footer{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.95);b
   <div><div class="brand">✦ Transformation OS</div><div class="sub" id="userEmail"></div></div>
   <button class="btn secondary small" onclick="logout()">Log out</button>
 </header>
+<div id="appError" class="alert alert-red hidden"></div>
 <nav id="nav"></nav>
 <main id="main"></main>
 </div>
 <footer>Synced to Firebase · Your own private data</footer>
 
 <script>
+// ── FIREBASE CONFIG — paste your config object here ─────────────────────────
 const firebaseConfig = {
-  apiKey: "AIzaSyAgK4XbqkZPaDW4lviMTu3o8hSj7rsuCXY",
-  authDomain: "vaishnavi-transformation.firebaseapp.com",
-  projectId: "vaishnavi-transformation",
-  storageBucket: "vaishnavi-transformation.firebasestorage.app",
-  messagingSenderId: "505909201002",
-  appId: "1:505909201002:web:324cbdeda84e60ad80a213"
+  apiKey: "PASTE_YOUR_API_KEY",
+  authDomain: "PASTE_YOUR_AUTH_DOMAIN",
+  projectId: "PASTE_YOUR_PROJECT_ID",
+  storageBucket: "PASTE_YOUR_STORAGE_BUCKET",
+  messagingSenderId: "PASTE_YOUR_SENDER_ID",
+  appId: "PASTE_YOUR_APP_ID"
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -186,7 +188,11 @@ const seed = {
 let S = null, uidRef = null, unsub = null;
 
 // ── AUTH ─────────────────────────────────────────────────────────────────────
-function showErr(msg){ const e=document.getElementById('loginError'); e.textContent=msg; e.classList.remove('hidden'); }
+function showErr(msg){
+  console.error("Transformation OS error:", msg);
+  const e1=document.getElementById('loginError'); if(e1){ e1.textContent=msg; e1.classList.remove('hidden'); }
+  const e2=document.getElementById('appError'); if(e2){ e2.textContent=msg; e2.classList.remove('hidden'); }
+}
 function doLogin(){
   const email=document.getElementById('loginEmail').value.trim(), pass=document.getElementById('loginPass').value;
   auth.signInWithEmailAndPassword(email, pass).catch(e=>showErr(e.message));
